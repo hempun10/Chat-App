@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {
+  Box,
+  Button,
+  Container,
+  HStack,
+  Input,
+  VStack,
+} from "@chakra-ui/react";
+import Message from "./Components/Message";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Box bg={"purple.300"}>
+      <Container h={"100vh"} bg={"whitesmoke"}>
+        <VStack height={"full"} p={4}>
+          <Button width={"full"} colorScheme="red">
+            Sign Out
+          </Button>
+          <VStack h={"full"} w={"full"}>
+            <Message text={"Sample Text"} />
+            <Message text={"Sample Text"} user="me" />
+          </VStack>
+          <form action="" style={{ width: "100%" }}>
+            <HStack>
+              <Input
+                placeholder="Enter a message"
+                style={{ border: "2px solid black" }}
+              />
+              <Button type="submit" colorScheme="purple">
+                Send
+              </Button>
+            </HStack>
+          </form>
+        </VStack>
+      </Container>
+    </Box>
+  );
 }
 
-export default App
+export default App;
