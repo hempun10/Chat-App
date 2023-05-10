@@ -1,3 +1,4 @@
+import "./App";
 import {
   Box,
   Button,
@@ -6,7 +7,6 @@ import {
   Input,
   VStack,
 } from "@chakra-ui/react";
-
 import Message from "./Components/Message";
 import {
   GoogleAuthProvider,
@@ -16,12 +16,15 @@ import {
   signOut,
 } from "firebase/auth";
 import { app } from "./Firebase";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   getFirestore,
   addDoc,
   collection,
   serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
 } from "firebase/firestore";
 
 const auth = getAuth(app);
@@ -36,6 +39,8 @@ const logOutHandler = () => signOut(auth);
 function App() {
   const [user, setUser] = useState(false);
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const divForScroll = useRef(null);
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
@@ -46,6 +51,7 @@ function App() {
         createdAt: serverTimestamp(),
       });
       setMessage("");
+      divForScroll.current.scrollIntoView({ behavior: "smooth" });
     } catch (error) {
       alert(error);
       console.log(error);
@@ -53,13 +59,23 @@ function App() {
   };
 
   useEffect(() => {
+    const q = query(collection(db, "Messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onAuthStateChanged(auth, (data) => {
       setUser(data);
     });
+    const unsubscribeForMessage = onSnapshot(q, (snap) => {
+      setMessages(
+        snap.docs.map((item) => {
+          const id = item.id;
+          return { id, ...item.data() };
+        })
+      );
+    });
     return () => {
       unsubscribe();
+      unsubscribeForMessage();
     };
-  });
+  }, []);
   return (
     <Box bg={"purple.300"}>
       {user ? (
@@ -68,9 +84,25 @@ function App() {
             <Button width={"full"} colorScheme="red" onClick={logOutHandler}>
               Sign Out
             </Button>
-            <VStack h={"full"} w={"full"} overflowY={"auto"}>
-              <Message text={"Sample Text"} />
-              <Message text={"Sample Text"} user="me" />
+            <VStack
+              h={"full"}
+              w={"full"}
+              overflowY={"auto"}
+              css={{
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+              }}
+            >
+              {messages.map((item, index) => (
+                <Message
+                  text={item.text}
+                  uri={item.uri}
+                  user={item.uid === user.uid ? "me" : "other"}
+                  key={index}
+                />
+              ))}
+              <div ref={divForScroll}></div>
             </VStack>
             <form onSubmit={submitHandler} action="" style={{ width: "100%" }}>
               <HStack>
