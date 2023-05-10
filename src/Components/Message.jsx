@@ -6,7 +6,7 @@ const Message = ({ text, uri, user = "other" }) => {
       alignSelf={user === "me" ? "flex-end" : "flex-start"}
       bg={"gray.200"}
       borderRadius={"base"}
-      paddingX={4}
+      paddingX={user === "me" ? "4" : "2"}
       paddingY={2}
     >
       {user === "other" && <Avatar src={uri} />}
