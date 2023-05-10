@@ -17,8 +17,15 @@ import {
 } from "firebase/auth";
 import { app } from "./Firebase";
 import { useEffect, useState } from "react";
+import {
+  getFirestore,
+  addDoc,
+  collection,
+  serverTimestamp,
+} from "firebase/firestore";
 
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 const loginHandle = () => {
   const provider = new GoogleAuthProvider();
@@ -28,6 +35,23 @@ const loginHandle = () => {
 const logOutHandler = () => signOut(auth);
 function App() {
   const [user, setUser] = useState(false);
+  const [message, setMessage] = useState("");
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, "Messages"), {
+        text: message,
+        uid: user.uid,
+        uri: user.photoURL,
+        createdAt: serverTimestamp(),
+      });
+      setMessage("");
+    } catch (error) {
+      alert(error);
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (data) => {
       setUser(data);
@@ -48,9 +72,11 @@ function App() {
               <Message text={"Sample Text"} />
               <Message text={"Sample Text"} user="me" />
             </VStack>
-            <form action="" style={{ width: "100%" }}>
+            <form onSubmit={submitHandler} action="" style={{ width: "100%" }}>
               <HStack>
                 <Input
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   placeholder="Enter a message"
                   style={{ border: "2px solid black" }}
                 />
